@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Registration — AskPupkin{% endblock %}
+
+{% block content %}
+<h2>Registration</h2>
+<p class="text-danger form-error" role="alert">Sorry, this email address already registered!</p>
+<form class="signup-form" method="post" action="{% url 'index' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% include 'core/includes/form_field.html' with field_id='signup-login' label='Login' placeholder='dr_pepper' maxlength=30 hint='At least 3 characters, up to 30' %}
+    {% include 'core/includes/form_field.html' with field_id='signup-email' label='Email' type='email' placeholder='dr.pepper@mail.ru' maxlength=254 error='Please enter a valid email address' %}
+    {% include 'core/includes/form_field.html' with field_id='signup-nickname' label='NickName' placeholder='Dr. Pepper' maxlength=30 hint='The name shown next to your questions and answers' %}
+    {% include 'core/includes/form_field.html' with field_id='signup-password' label='Password' type='password' placeholder='At least 6 characters' maxlength=64 hint='At least 6 characters' %}
+    {% include 'core/includes/form_field.html' with field_id='signup-password2' label='Repeat password' type='password' placeholder='Repeat your password' maxlength=64 error='Passwords do not match' %}
+    {% include 'core/includes/form_field.html' with field_id='signup-avatar' label='Upload avatar' type='file' hint='JPG or PNG, up to 2 MB' %}
+    <div class="row">
+        <div class="col-sm-9 offset-sm-3">
+            <button type="submit" class="btn btn-primary">Register!</button>
+            <div class="mt-2"><a href="{% url 'login' %}">I already have an account</a></div>
+        </div>
+    </div>
+</form>
+{% endblock %}

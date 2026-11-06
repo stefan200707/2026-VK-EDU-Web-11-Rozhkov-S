@@ -1,0 +1,8 @@
+{# Виджет лайков. Параметры: rating, state — up, down или none #}
+<div class="likes">
+    <span class="likes-count">{{ rating }}</span>
+    <div class="likes-arrows">
+        <button type="button" class="like-btn{% if state == 'up' %} active{% endif %}" aria-label="Like" aria-pressed="{% if state == 'up' %}true{% else %}false{% endif %}">▲</button>
+        <button type="button" class="like-btn{% if state == 'down' %} active{% endif %}" aria-label="Dislike" aria-pressed="{% if state == 'down' %}true{% else %}false{% endif %}">▼</button>
+    </div>
+</div>

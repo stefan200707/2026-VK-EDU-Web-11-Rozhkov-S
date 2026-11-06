@@ -1,0 +1,12 @@
+<header class="top">
+    <div class="container top-inner">
+        <h1 class="logo"><a href="{% url 'index' %}">AskPupkin</a></h1>
+
+        <form class="header-search" role="search" method="get" action="{% url 'index' %}">
+            <input type="search" name="q" placeholder="Search" aria-label="Search" maxlength="100">
+            <a href="{% url 'ask' %}" class="btn btn-success">ASK!</a>
+        </form>
+
+        {% include 'core/includes/user_block.html' %}
+    </div>
+</header>

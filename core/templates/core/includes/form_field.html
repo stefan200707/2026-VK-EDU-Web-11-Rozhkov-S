@@ -1,0 +1,22 @@
+{# Строка формы: подпись слева, поле справа. Параметры: field_id, label, type, placeholder, maxlength, hint, error, value, readonly, rows #}
+<div class="row mb-3">
+    <label for="{{ field_id }}" class="col-sm-3 col-form-label">{{ label }}</label>
+    <div class="col-sm-9">
+        {% if type == 'textarea' %}
+        <textarea id="{{ field_id }}" name="{{ field_id }}"
+                  class="form-control{% if error %} is-invalid{% endif %}"
+                  rows="{{ rows|default:5 }}" maxlength="{{ maxlength }}"
+                  placeholder="{{ placeholder }}"></textarea>
+        {% else %}
+        <input id="{{ field_id }}" name="{{ field_id }}" type="{{ type|default:'text' }}"
+               class="form-control{% if error %} is-invalid{% endif %}"
+               {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+               {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+               {% if value %}value="{{ value }}"{% endif %}
+               {% if readonly %}readonly{% endif %}
+               {% if type == 'file' %}accept="image/*"{% endif %}>
+        {% endif %}
+        {% if error %}<div class="invalid-feedback">{{ error }}</div>{% endif %}
+        {% if hint %}<div class="form-text">{{ hint }}</div>{% endif %}
+    </div>
+</div>

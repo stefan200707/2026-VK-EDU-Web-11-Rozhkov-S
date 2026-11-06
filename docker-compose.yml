@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: docker-dev-key-change-me
+      DEBUG: "True"
+      ALLOWED_HOSTS: "*"
+    volumes:
+      - .:/app                 # код проекта: правки на хосте видны в контейнере
+      - ./media:/app/media     # загруженные файлы не теряются при пересборке

@@ -1,0 +1,24 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'core/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <link rel="icon" href="{% static 'core/img/favicon-1.svg' %}" type="image/svg+xml">
+    <title>{% block title %}AskPupkin{% endblock %}</title>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    {% include 'core/includes/header.html' %}
+    <div class="container flex-grow-1 my-4 d-flex flex-column">
+        <div class="row flex-grow-1">
+            <main class="col-lg-9 d-flex flex-column">
+                {% block content %}{% endblock %}
+            </main>
+            {% include 'core/includes/sidebar.html' %}
+        </div>
+    </div>
+    <footer class="py-3 text-center border-top">© AskPupkin, 2026</footer>
+    <script src="{% static 'core/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

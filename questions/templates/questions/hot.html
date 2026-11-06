@@ -1,0 +1,11 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Hot Questions — AskPupkin{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-baseline gap-3 mb-3">
+    <h2>Hot Questions</h2>
+    <a href="{% url 'index' %}">New Questions</a>
+</div>
+{% include 'questions/includes/question_list.html' %}
+{% endblock %}

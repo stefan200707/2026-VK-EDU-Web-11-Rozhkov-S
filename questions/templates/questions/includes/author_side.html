@@ -1,0 +1,6 @@
+{# Левая колонка карточки: аватар автора и виджет лайков. Параметры: item (вопрос или ответ), size #}
+{% load static %}
+<div class="question-side">
+    <img src="{% static item.avatar %}" alt="Avatar of {{ item.author }}" width="{{ size|default:64 }}" height="{{ size|default:64 }}" class="rounded">
+    {% include 'questions/includes/likes.html' with rating=item.rating state=item.like_state %}
+</div>

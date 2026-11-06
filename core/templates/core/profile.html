@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Settings: {{ current_user.nickname }} — AskPupkin{% endblock %}
+
+{% block content %}
+<h2>Settings: {{ current_user.nickname }}</h2>
+<p class="text-danger form-error" role="alert">Sorry, we could not save your settings!</p>
+<form class="profile-form" method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% include 'core/includes/form_field.html' with field_id='profile-login' label='Login' maxlength=30 value=current_user.login readonly=True hint='Login cannot be changed' %}
+    {% include 'core/includes/form_field.html' with field_id='profile-email' label='Email' type='email' maxlength=254 value=current_user.email error='Please enter a valid email address' %}
+    {% include 'core/includes/form_field.html' with field_id='profile-nickname' label='NickName' maxlength=30 value=current_user.nickname hint='The name shown next to your questions and answers' %}
+    <div class="row mb-3">
+        <span class="col-sm-3 col-form-label">Upload avatar</span>
+        <div class="col-sm-9">
+            <img src="{% static current_user.avatar %}" alt="Current avatar of {{ current_user.nickname }}" width="128" height="128" class="avatar-preview rounded mb-2">
+            <label for="profile-avatar" class="visually-hidden">Choose a new avatar</label>
+            <input id="profile-avatar" name="profile-avatar" type="file" class="form-control" accept="image/*">
+            <div class="form-text">JPG or PNG, up to 2 MB</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-9 offset-sm-3">
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

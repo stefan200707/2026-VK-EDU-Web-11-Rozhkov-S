@@ -1,0 +1,17 @@
+{% load static %}{% if current_user %}
+<div class="header-user-avatar">
+    <img src="{% static current_user.avatar %}" alt="{{ current_user.nickname }} avatar">
+    <div>
+        <span>{{ current_user.nickname }}</span>
+        <div>
+            <a href="{% url 'profile' %}">Settings</a>
+            <a href="{% url 'login' %}">Logout</a>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="d-flex gap-3">
+    <a href="{% url 'login' %}">log in</a>
+    <a href="{% url 'signup' %}">register</a>
+</div>
+{% endif %}

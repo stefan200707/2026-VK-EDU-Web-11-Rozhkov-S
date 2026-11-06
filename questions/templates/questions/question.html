@@ -1,0 +1,39 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ question.title }} — AskPupkin{% endblock %}
+
+{% block content %}
+<article class="card mb-4">
+    <div class="card-body d-flex gap-3">
+        {% include 'questions/includes/author_side.html' with item=question size=96 %}
+        <div class="question-main">
+            <h2 class="h4">{{ question.title }}</h2>
+            <p>{{ question.text }}</p>
+            <div class="question-meta">
+                <span>{{ question.answers_count }} answers</span>
+                <span>{% include 'questions/includes/tag_links.html' with tags=question.tags %}</span>
+                <time datetime="{{ question.created|date:'Y-m-d\TH:i' }}">{{ question.created|date:'j M, H:i' }}</time>
+            </div>
+        </div>
+    </div>
+</article>
+
+<h3 class="h5 mb-3">Answers</h3>
+{% for answer in page %}
+    {% include 'questions/includes/answer_card.html' %}
+{% endfor %}
+{% include 'core/includes/paginator.html' %}
+
+<form class="answer-form mt-4" method="post" action="{% url 'question' question.id %}">
+    {% csrf_token %}
+    <h3 class="h5">Your answer</h3>
+    <p class="text-danger">Sorry, your answer was not saved.</p>
+    <div class="mb-3">
+        <label for="answer-text" class="form-label visually-hidden">Answer</label>
+        <textarea id="answer-text" name="answer" class="form-control is-invalid" rows="5" maxlength="2000" placeholder="Enter your answer here.."></textarea>
+        <div class="invalid-feedback">Answer must be at least 10 characters</div>
+        <div class="form-text">Up to 2000 characters</div>
+    </div>
+    <button type="submit" class="btn btn-secondary">Answer</button>
+</form>
+{% endblock %}

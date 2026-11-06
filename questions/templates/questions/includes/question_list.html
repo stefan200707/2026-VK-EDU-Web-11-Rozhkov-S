@@ -1,0 +1,5 @@
+{# Список карточек вопросов и пагинатор: общая часть index, hot и tag #}
+{% for question in page %}
+    {% include 'questions/includes/question_card.html' %}
+{% endfor %}
+{% include 'core/includes/paginator.html' %}

@@ -1,0 +1,14 @@
+<article class="card mb-3">
+    <div class="card-body d-flex gap-3">
+        {% include 'questions/includes/author_side.html' with item=question %}
+        <div class="question-main">
+            <h3 class="h5"><a href="{% url 'question' question.id %}">{{ question.title }}</a></h3>
+            <p class="question-text">{{ question.text }}</p>
+            <div class="question-meta">
+                <a href="{% url 'question' question.id %}">answer ({{ question.answers_count }})</a>
+                <span>{% include 'questions/includes/tag_links.html' with tags=question.tags %}</span>
+                <time datetime="{{ question.created|date:'Y-m-d\TH:i' }}">{{ question.created|date:'j M, H:i' }}</time>
+            </div>
+        </div>
+    </div>
+</article>

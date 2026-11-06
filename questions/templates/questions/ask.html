@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+
+{% block title %}New Question — AskPupkin{% endblock %}
+
+{% block content %}
+<h2>New Question</h2>
+<form class="ask-form" method="post" action="{% url 'index' %}">
+    {% csrf_token %}
+    <p class="text-danger" role="alert">Please fill in all the fields.</p>
+    {% include 'core/includes/form_field.html' with field_id='title' label='Title' placeholder='How to build a moon park?' maxlength=100 hint='Short and to the point, up to 100 characters' %}
+    {% include 'core/includes/form_field.html' with field_id='text' label='Text' type='textarea' rows=10 placeholder='Describe your problem in detail' maxlength=3000 hint='Up to 3000 characters' error='Text must be at least 20 characters' %}
+    {% include 'core/includes/form_field.html' with field_id='tags' label='Tags' placeholder='moon, park, puzzle' maxlength=60 hint='Comma separated, no more than 3 tags' %}
+    <div class="row">
+        <div class="col-sm-9 offset-sm-3">
+            <button type="submit" class="btn btn-success">ASK!</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

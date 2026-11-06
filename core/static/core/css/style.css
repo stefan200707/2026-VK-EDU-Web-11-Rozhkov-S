@@ -1,0 +1,215 @@
+* {
+    box-sizing: border-box;
+}
+body {
+    max-width: 100%;
+    margin: 0;
+}
+
+/* шапка: фон на всю ширину, содержимое в .container, как и основная часть страницы */
+.top {
+    padding: 12px 0;
+    background: #dbe7ff;
+}
+
+.top-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.tag { text-decoration: none; margin-right: 8px; }
+.tag-big { font-size: 22px; }
+.tag-red { color: crimson; }
+.tag-green { color: #2e9e4f; }
+.tag-yellow { color: #ffc720}
+.tag-small { font-size: 12px }
+
+.logo {
+    margin: 0;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.logo a {
+    text-decoration: none;
+}
+
+input[type="search"] {
+    flex: 1;            /* поле берёт всё место в ряду, кроме кнопки */
+    min-width: 0;
+    border: 2px solid gray;
+    border-radius: 16px;
+    height:45px;
+    background: url("../img/search.svg") no-repeat 12px center;
+    padding-left: 36px;   /* чтобы текст не налезал на лупу */
+}
+
+.header-search {
+    display: flex;
+    gap: 12px;
+    flex: 1;            /* поиск растягивается между логотипом и юзерблоком */
+    max-width: 520px;   /* но не шире 520px */
+}
+
+.header-search .btn {
+    box-shadow: 3px 3px black;
+    display: flex;
+    align-items: center;
+}
+
+.header-user-avatar {
+    display: flex;
+}
+
+.header-user-avatar > div {
+    margin-left: 15px;
+}
+
+.header-user-avatar > div > div {
+    display: flex;
+    gap: 12px;
+}
+
+.header-user-avatar img {
+    width: 45px;
+    height: 45px;
+}
+
+/* ===== Карточка вопроса ===== */
+.question-side {
+    flex-shrink: 0;            /* аватарка и лайки не сжимаются */
+    display: flex;
+    flex-direction: column;   /* аватар сверху, лайки под ним */
+    align-items: center;      /* по центру колонки */
+    gap: 8px;
+}
+
+.likes {
+    display: flex;
+    border: 1px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.likes-count {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border-right: 1px solid #333;
+}
+
+.likes-arrows {
+    display: flex;
+    flex-direction: column;
+}
+
+.like-btn {
+    border: 0;
+    background: white;
+    font-size: 10px;
+    line-height: 1;
+    padding: 3px 6px;
+}
+
+.like-btn.active {
+    background: #198754;
+    color: white;
+}
+
+.like-btn:last-child.active {
+    background: #dc3545;
+}
+
+/* на телефоне кнопки лайков крупнее, чтобы попасть пальцем */
+@media (max-width: 575px) {
+    .like-btn {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+}
+
+.question-main {
+    min-width: 0;              /* текст переносится, а не распирает карточку */
+}
+
+/* текст вопроса — максимум 2 строки, дальше многоточие */
+.question-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+/* низ карточки: ответы, теги, время в строку с переносом */
+.question-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* отступ сайдбара от ленты — только когда он стоит рядом (от 992px, широкий отступ от 1200px) */
+@media (min-width: 992px) {
+    .sidebar {
+        padding-left: 24px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .sidebar {
+        padding-left: 100px;
+    }
+}
+
+/* сайдбар чуть крупнее: текст 18px вместо 16px, заголовки 24px вместо 20px */
+.sidebar {
+    font-size: 18px;
+}
+
+.sidebar h3 {
+    font-size: 24px;
+}
+
+/* облако тегов: перенос строк без <br> */
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    row-gap: 4px;
+}
+
+.login-form,
+.signup-form,
+.profile-form {
+    max-width: 480px;
+    margin-bottom: 24px;
+}
+
+.form-error {
+    max-width: 480px;
+}
+
+.avatar-preview {
+    display: block;
+    object-fit: cover;
+}
+
+.tag-title {
+    color: #0d6efd;
+}
+
+/* форма ответа на странице вопроса */
+.answer-form {
+    max-width: 640px;
+    margin-bottom: 24px;
+}
+/* ===== Страница «New Question» ===== */
+.ask-form {
+    max-width: 640px;          /* форма не растягивается на всю ленту */
+    margin-bottom: 24px;       /* на телефоне не липнет к сайдбару снизу */
+}

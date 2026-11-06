@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="icon" href="static/img/favicon-1.svg" type="image/svg+xml">
+    <title>AskPupkin</title>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header class="top">
+        <div class="container top-inner">
+            <h1 class="logo"><a href="index.html">AskPupkin</a></h1>
+
+            <form class="header-search" role="search" method="get" action="index.html">
+                <input type="search" name="q" placeholder="Search" aria-label="Search" maxlength="100">
+                <a href="ask.html" class="btn btn-success">ASK!</a>
+            </form>
+
+            <div class="d-flex gap-3">
+            <a href="login.html">log in</a>
+            <a href="signup.html">register</a>
+        </div>
+        </div>
+    </header>
+    <div class="container flex-grow-1 my-4 d-flex flex-column">
+        <div class="row flex-grow-1">
+            <main class="col-lg-9 d-flex flex-column">
+                <!-- Page content goes here: copy this layout and put the content inside <main> -->
+                <h2>Page title</h2>
+                <p>Base layout of AskPupkin: header, main column, sidebar and footer.</p>
+            </main>
+            <aside class="col-lg-3 sidebar">
+                    <section class="mb-3">
+                        <h3>Popular Tags</h3>
+                        <div class="tag-cloud">
+                            <a class="tag tag-small" href="tag.html">perl</a>
+                            <a class="tag tag-red" href="tag.html">python</a>
+                            <a class="tag" href="tag.html">Technopark</a>
+                            <a class="tag tag-big tag-red" href="tag.html">MySQL</a>
+                            <a class="tag tag-green" href="tag.html">django</a>
+                            <a class="tag" href="tag.html">Mail.Ru</a>
+                            <a class="tag tag-small" href="tag.html">Voloshin</a>
+                            <a class="tag tag-yellow" href="tag.html">Firefox</a>
+                        </div>
+                    </section>
+
+                    <section class="mb-3">
+                        <h3>Best Members</h3>
+                        <ul class="list-unstyled">
+                            <li><a href="profile.html">Mr. Freeman</a></li>
+                            <li><a href="profile.html">Dr. House</a></li>
+                            <li><a href="profile.html">Bender</a></li>
+                            <li><a href="profile.html">Queen Victoria</a></li>
+                            <li><a href="profile.html">V. Pupkin</a></li>
+                        </ul>
+                    </section>
+                </aside>
+        </div>
+    </div>
+    <footer class="py-3 text-center border-top">© AskPupkin, 2026</footer>
+    <script src="static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

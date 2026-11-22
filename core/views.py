@@ -1,7 +1,5 @@
 from django.shortcuts import render
 
-from .stubs import CURRENT_USER
-
 
 def login(request):
     return render(request, 'core/login.html')
@@ -12,5 +10,5 @@ def signup(request):
 
 
 def profile(request):
-    # Только на странице профиля юзерблок показывает авторизованного пользователя
-    return render(request, 'core/profile.html', {'current_user': CURRENT_USER})
+    # Вход появится в ДЗ 4, пока страница показывает request.user
+    return render(request, 'core/profile.html')

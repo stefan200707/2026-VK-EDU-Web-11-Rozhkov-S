@@ -1,8 +1,8 @@
-{% load static %}{% if current_user %}
+{% load static %}{% if user.is_authenticated %}{% static 'core/img/avatar-1.svg' as default_avatar %}
 <div class="header-user-avatar">
-    <img src="{% static current_user.avatar %}" alt="{{ current_user.nickname }} avatar">
+    <img src="{{ user.profile.avatar_url|default:default_avatar }}" alt="{{ user.profile|default:user.username }} avatar">
     <div>
-        <span>{{ current_user.nickname }}</span>
+        <span>{{ user.profile|default:user.username }}</span>
         <div>
             <a href="{% url 'profile' %}">Settings</a>
             <a href="{% url 'login' %}">Logout</a>

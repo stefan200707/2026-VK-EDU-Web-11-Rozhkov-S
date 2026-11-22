@@ -1,5 +1,7 @@
 {# Список карточек вопросов и пагинатор: общая часть index, hot и tag #}
 {% for question in page %}
     {% include 'questions/includes/question_card.html' %}
+{% empty %}
+    <p class="text-muted">Пока нет ни одного вопроса</p>
 {% endfor %}
 {% include 'core/includes/paginator.html' %}

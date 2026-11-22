@@ -1,8 +1,14 @@
 import re
+from io import StringIO
 
-from django.test import Client, RequestFactory, SimpleTestCase
+from django.contrib.auth.models import User
+from django.core.management import call_command
+from django.test import Client, RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 
+from core.models import Profile
+
+from .models import Answer, Question, Tag
 from .utils import paginate
 
 OBJECTS = list(range(1, 36))   # 35 объектов = 4 страницы по 10
@@ -42,30 +48,63 @@ class PaginateTests(SimpleTestCase):
         self.assertEqual(page.page_numbers, [1, 2, 3, None, 10])
 
 
-class PagesTests(SimpleTestCase):
+class EmptyDatabaseTests(TestCase):
+    def test_empty_states(self):
+        self.assertContains(self.client.get(reverse('index')), 'Пока нет ни одного вопроса')
+        self.assertContains(self.client.get(reverse('hot')), 'Пока нет ни одного вопроса')
+        self.assertContains(self.client.get(reverse('index')), 'Пока нет ни одного тега')
+
+    def test_unknown_question_and_tag_are_404(self):
+        self.assertEqual(self.client.get(reverse('question', args=[999])).status_code, 404)
+        self.assertEqual(self.client.get(reverse('tag', args=['no-such-tag'])).status_code, 404)
+
+
+class PagesTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user('pupkin', 'pupkin@example.com', 'password')
+        Profile.objects.create(user=cls.user, nickname='V. Pupkin')
+        cls.tag = Tag.objects.create(name='django')
+        cls.question = Question.objects.create(title='How to build a moon park?', text='Text', author=cls.user)
+        cls.question.tags.add(cls.tag)
+        cls.empty_question = Question.objects.create(title='Second question', text='Text', author=cls.user)
+        Answer.objects.create(question=cls.question, author=cls.user, text='First answer')
+
     def test_all_pages_open(self):
         urls = [
-            reverse('index'), reverse('hot'), reverse('tag', args=['django']), reverse('tag', args=['blablabla']),
-            reverse('question', args=[1]), reverse('login'), reverse('signup'),
+            reverse('index'), reverse('hot'), reverse('tag', args=['django']),
+            reverse('question', args=[self.question.id]), reverse('login'), reverse('signup'),
             reverse('profile'), reverse('ask'),
         ]
         for url in urls:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
 
+    def test_pages_show_data(self):
+        self.assertContains(self.client.get(reverse('index')), 'How to build a moon park?')
+        self.assertContains(self.client.get(reverse('tag', args=['django'])), 'How to build a moon park?')
+        self.assertContains(self.client.get(self.question.get_absolute_url()), 'First answer')
+        self.assertContains(self.client.get(self.empty_question.get_absolute_url()),
+                            'Пока нет ни одного ответа к этому вопросу')
+
     def test_bad_page_param_is_not_500(self):
         for value in ('abc', '99999', '-1', '0'):
             with self.subTest(page=value):
                 self.assertEqual(self.client.get(reverse('index'), {'page': value}).status_code, 200)
 
-    def test_unknown_question_and_tag_are_404(self):
-        self.assertEqual(self.client.get(reverse('question', args=[999])).status_code, 404)
-        self.assertEqual(self.client.get(reverse('tag', args=['no-such-tag'])).status_code, 404)
+    def test_number_of_queries_does_not_grow(self):
+        # 15 новых вопросов с тегами: число запросов на странице не должно зависеть от количества вопросов
+        for i in range(15):
+            Question.objects.create(title=f'Question {i}', text='Text', author=self.user).tags.add(self.tag)
+        self.client.get(reverse('index'))
+        with self.assertNumQueries(7):
+            self.client.get(reverse('index'))
 
-    def test_user_block_only_on_profile(self):
-        self.assertContains(self.client.get(reverse('profile')), 'Logout')
-        self.assertNotContains(self.client.get(reverse('index')), 'Logout')
+    def test_user_block(self):
         self.assertContains(self.client.get(reverse('index')), 'register')
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(reverse('profile')), 'Logout')
+        self.assertContains(self.client.get(reverse('profile')), 'V. Pupkin')
 
     def test_post_forms_with_csrf_token(self):
         client = Client(enforce_csrf_checks=True)
@@ -81,3 +120,16 @@ class PagesTests(SimpleTestCase):
     def test_post_without_token_is_forbidden(self):
         client = Client(enforce_csrf_checks=True)
         self.assertEqual(client.post(reverse('login')).status_code, 403)
+
+
+class FillDbTests(TestCase):
+    def test_fill_db(self):
+        call_command('fill_db', 2, stdout=StringIO())
+        self.assertEqual(User.objects.count(), 2)
+        self.assertEqual(Profile.objects.count(), 2)
+        self.assertEqual(Tag.objects.count(), 2)
+        self.assertEqual(Question.objects.count(), 20)
+        self.assertEqual(Answer.objects.count(), 200)
+        question = Question.objects.order_by('?').first()
+        self.assertEqual(question.answers_count, question.answers.count())
+        self.assertEqual(question.rating, sum(question.likes.values_list('value', flat=True)))

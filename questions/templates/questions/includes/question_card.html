@@ -1,6 +1,6 @@
 <article class="card mb-3">
     <div class="card-body d-flex gap-3">
-        {% include 'questions/includes/author_side.html' with item=question %}
+        {% include 'questions/includes/author_side.html' with item=question kind='question' %}
         <div class="question-main">
             <h3 class="h5"><a href="{{ question.get_absolute_url }}">{{ question.title }}</a></h3>
             <p class="question-text">{{ question.text }}</p>

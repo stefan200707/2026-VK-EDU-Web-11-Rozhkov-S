@@ -1,0 +1,4 @@
+{# Общие ошибки формы (не привязанные к полю) #}
+{% for error in form.non_field_errors %}
+<p class="text-danger form-error" role="alert">{{ error }}</p>
+{% endfor %}

@@ -1,11 +1,31 @@
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
+from django.db.models import F, Q
 from django.urls import reverse
 from django.utils import timezone
 
 from .managers import AnswerManager, QuestionManager, TagManager
 
 LIKE_CHOICES = [(1, 'Лайк'), (-1, 'Дизлайк')]
+ANSWERS_PER_PAGE = 5
+
+
+class VoteMixin:
+    """Оценка вопроса или ответа: у обоих есть related_name='likes' и поле rating."""
+
+    def vote(self, user, value):
+        """Ставит или меняет оценку пользователя и возвращает новый рейтинг."""
+        with transaction.atomic():
+            like = self.likes.select_for_update().filter(user=user).first()
+            old_value = like.value if like else 0
+            if like:
+                like.value = value
+                like.save(update_fields=['value'])
+            else:
+                self.likes.create(user=user, value=value)
+            type(self).objects.filter(pk=self.pk).update(rating=F('rating') + value - old_value)
+        self.refresh_from_db(fields=['rating'])
+        return self.rating
 
 
 class Tag(models.Model):
@@ -24,7 +44,7 @@ class Tag(models.Model):
         return reverse('tag', args=[self.name])
 
 
-class Question(models.Model):
+class Question(VoteMixin, models.Model):
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questions', verbose_name='Автор')
@@ -51,7 +71,7 @@ class Question(models.Model):
         return reverse('question', args=[self.id])
 
 
-class Answer(models.Model):
+class Answer(VoteMixin, models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers', verbose_name='Вопрос')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answers', verbose_name='Автор')
     text = models.TextField(verbose_name='Текст')
@@ -70,6 +90,23 @@ class Answer(models.Model):
 
     def __str__(self):
         return f'Ответ #{self.id} на вопрос #{self.question_id}'
+
+    def get_absolute_url(self):
+        # ответы на странице вопроса идут по (created_at, id), по 5 штук; считаем, на какой странице этот
+        position = Answer.objects.filter(question_id=self.question_id).filter(
+            Q(created_at__lt=self.created_at) | Q(created_at=self.created_at, id__lte=self.id)
+        ).count()
+        page = (position - 1) // ANSWERS_PER_PAGE + 1
+        return f"{reverse('question', args=[self.question_id])}?page={page}#answer-{self.id}"
+
+    def toggle_correct(self):
+        """Отмечает ответ правильным (с остальных ответов вопроса отметка снимается) или снимает отметку."""
+        with transaction.atomic():
+            if not self.is_correct:
+                Answer.objects.filter(question_id=self.question_id, is_correct=True).update(is_correct=False)
+            self.is_correct = not self.is_correct
+            self.save(update_fields=['is_correct'])
+        return self.is_correct
 
 
 class QuestionLike(models.Model):

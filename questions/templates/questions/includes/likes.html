@@ -1,8 +1,16 @@
-{# Виджет лайков. Параметры: rating, state — up, down или none #}
-<div class="likes">
-    <span class="likes-count">{{ rating }}</span>
+{# Виджет лайков. Параметры: item — вопрос или ответ, kind — question или answer #}
+<div class="likes" data-id="{{ item.id }}" data-url="{% if kind == 'answer' %}{% url 'answer_vote' %}{% else %}{% url 'question_vote' %}{% endif %}"
+     {% if not user.is_authenticated %}title="Войдите, чтобы оценивать"{% endif %}>
+    <span class="likes-count">{{ item.rating }}</span>
     <div class="likes-arrows">
-        <button type="button" class="like-btn{% if state == 'up' %} active{% endif %}" aria-label="Like" aria-pressed="{% if state == 'up' %}true{% else %}false{% endif %}">▲</button>
-        <button type="button" class="like-btn{% if state == 'down' %} active{% endif %}" aria-label="Dislike" aria-pressed="{% if state == 'down' %}true{% else %}false{% endif %}">▼</button>
+        {% if user.is_authenticated %}
+        <button type="button" class="like-btn{% if item.user_vote == 1 %} active{% endif %}" data-type="like" aria-label="Like"
+                aria-pressed="{% if item.user_vote == 1 %}true{% else %}false{% endif %}"{% if item.user_vote == 1 %} disabled{% endif %}>▲</button>
+        <button type="button" class="like-btn{% if item.user_vote == -1 %} active{% endif %}" data-type="dislike" aria-label="Dislike"
+                aria-pressed="{% if item.user_vote == -1 %}true{% else %}false{% endif %}"{% if item.user_vote == -1 %} disabled{% endif %}>▼</button>
+        {% else %}
+        <button type="button" class="like-btn" aria-label="Like" title="Войдите, чтобы оценивать" disabled>▲</button>
+        <button type="button" class="like-btn" aria-label="Dislike" title="Войдите, чтобы оценивать" disabled>▼</button>
+        {% endif %}
     </div>
 </div>

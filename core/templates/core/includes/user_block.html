@@ -2,16 +2,20 @@
 <div class="header-user-avatar">
     <img src="{{ user.profile.avatar_url|default:default_avatar }}" alt="{{ user.profile|default:user.username }} avatar">
     <div>
-        <span>{{ user.profile|default:user.username }}</span>
+        <a href="{% url 'profile' %}">{{ user.profile|default:user.username }}</a>
         <div>
             <a href="{% url 'profile' %}">Settings</a>
-            <a href="{% url 'login' %}">Logout</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn btn-link p-0 align-baseline">Logout</button>
+            </form>
         </div>
     </div>
 </div>
 {% else %}
 <div class="d-flex gap-3">
-    <a href="{% url 'login' %}">log in</a>
+    <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">log in</a>
     <a href="{% url 'signup' %}">register</a>
 </div>
 {% endif %}

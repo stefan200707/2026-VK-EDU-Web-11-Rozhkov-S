@@ -1,13 +1,22 @@
+import os
+import uuid
+
 from django.contrib.auth.models import User
 from django.db import models
 
 from .managers import ProfileManager
 
 
+def avatar_upload_to(instance, filename):
+    # случайное имя файла: по ссылке нельзя перебрать чужие аватарки
+    ext = os.path.splitext(filename)[1].lower()
+    return f'avatars/{uuid.uuid4().hex}{ext}'
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='Пользователь')
     nickname = models.CharField(max_length=30, blank=True, verbose_name='Никнейм')
-    avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name='Аватарка')
+    avatar = models.ImageField(upload_to=avatar_upload_to, null=True, blank=True, verbose_name='Аватарка')
 
     objects = ProfileManager()
 

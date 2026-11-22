@@ -1,24 +1,30 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Settings: {{ user.profile.nickname }} — AskPupkin{% endblock %}
+{% block title %}Settings: {{ form.instance }} — AskPupkin{% endblock %}
 
 {% block content %}
 {% static 'core/img/avatar-1.svg' as default_avatar %}
-<h2>Settings: {{ user.profile.nickname }}</h2>
-<p class="text-danger form-error" role="alert">Sorry, we could not save your settings!</p>
-<form class="profile-form" method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+<h2>Settings: {{ form.instance }}</h2>
+{% include 'core/includes/form_errors.html' %}
+<form class="profile-form" method="post" action="{% url 'profile' %}" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
-    {% include 'core/includes/form_field.html' with field_id='profile-login' label='Login' maxlength=30 value=user.username readonly=True hint='Login cannot be changed' %}
-    {% include 'core/includes/form_field.html' with field_id='profile-email' label='Email' type='email' maxlength=254 value=user.email error='Please enter a valid email address' %}
-    {% include 'core/includes/form_field.html' with field_id='profile-nickname' label='NickName' maxlength=30 value=user.profile.nickname hint='The name shown next to your questions and answers' %}
     <div class="row mb-3">
-        <span class="col-sm-3 col-form-label">Upload avatar</span>
+        <label for="profile-login" class="col-sm-3 col-form-label">Login</label>
         <div class="col-sm-9">
-            <img src="{{ user.profile.avatar_url|default:default_avatar }}" alt="Current avatar of {{ user.profile.nickname }}" width="128" height="128" class="avatar-preview rounded mb-2">
-            <label for="profile-avatar" class="visually-hidden">Choose a new avatar</label>
-            <input id="profile-avatar" name="profile-avatar" type="file" class="form-control" accept="image/*">
-            <div class="form-text">JPG or PNG, up to 2 MB</div>
+            <input id="profile-login" type="text" class="form-control" value="{{ user.username }}" readonly>
+            <div class="form-text">Логин изменить нельзя</div>
+        </div>
+    </div>
+    {% include 'core/includes/form_field.html' with field=form.email %}
+    {% include 'core/includes/form_field.html' with field=form.nickname %}
+    <div class="row mb-3">
+        <label for="{{ form.avatar.id_for_label }}" class="col-sm-3 col-form-label">{{ form.avatar.label }}</label>
+        <div class="col-sm-9">
+            <img src="{{ form.instance.avatar_url|default:default_avatar }}" alt="Current avatar of {{ form.instance }}" width="128" height="128" class="avatar-preview rounded mb-2">
+            {{ form.avatar }}
+            {% for error in form.avatar.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            <div class="form-text">{{ form.avatar.help_text }}</div>
         </div>
     </div>
     <div class="row">

@@ -83,10 +83,13 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'static'   # сюда collectstatic собирает файлы
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'     # загруженные пользователями файлы
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# куда login_required отправляет неавторизованного пользователя
+LOGIN_URL = 'login'
 
 # django-debug-toolbar только в режиме разработки (и не во время тестов)
 TESTING = 'test' in sys.argv

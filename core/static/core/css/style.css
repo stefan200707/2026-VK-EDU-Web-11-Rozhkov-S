@@ -213,3 +213,12 @@ input[type="search"] {
     max-width: 640px;          /* форма не растягивается на всю ленту */
     margin-bottom: 24px;       /* на телефоне не липнет к сайдбару снизу */
 }
+
+/* недоступные кнопки: уже поставленная оценка или пользователь не вошёл */
+.like-btn:disabled {
+    cursor: not-allowed;
+}
+
+.like-btn:disabled:not(.active) {
+    color: #aaa;
+}

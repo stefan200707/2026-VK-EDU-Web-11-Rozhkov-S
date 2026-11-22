@@ -74,11 +74,18 @@ class PagesTests(TestCase):
         urls = [
             reverse('index'), reverse('hot'), reverse('tag', args=['django']),
             reverse('question', args=[self.question.id]), reverse('login'), reverse('signup'),
-            reverse('profile'), reverse('ask'),
         ]
         for url in urls:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
+        # страницы только для вошедших
+        for name in ('profile', 'ask'):
+            with self.subTest(url=name):
+                self.assertRedirects(self.client.get(reverse(name)), f"{reverse('login')}?next={reverse(name)}")
+        self.client.force_login(self.user)
+        for name in ('profile', 'ask'):
+            with self.subTest(url=name):
+                self.assertEqual(self.client.get(reverse(name)).status_code, 200)
 
     def test_pages_show_data(self):
         self.assertContains(self.client.get(reverse('index')), 'How to build a moon park?')
@@ -99,15 +106,31 @@ class PagesTests(TestCase):
         self.client.get(reverse('index'))
         with self.assertNumQueries(7):
             self.client.get(reverse('index'))
+        # у вошедшего пользователя добавляются сессия, пользователь, профиль в шапке и его оценки — тоже не от числа вопросов
+        self.client.force_login(self.user)
+        self.client.get(reverse('index'))
+        with self.assertNumQueries(11):
+            self.client.get(reverse('index'))
+        for i in range(7):
+            Answer.objects.create(question=self.question, author=self.user, text=f'Answer {i}')
+        with self.assertNumQueries(13):
+            self.client.get(self.question.get_absolute_url())
 
     def test_user_block(self):
-        self.assertContains(self.client.get(reverse('index')), 'register')
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'register')
+        self.assertContains(response, 'title="Войдите, чтобы задать вопрос"')
+        self.assertContains(response, 'title="Войдите, чтобы оценивать"')
+        self.assertContains(self.client.get(self.question.get_absolute_url()), 'title="Войдите, чтобы ответить"')
         self.client.force_login(self.user)
-        self.assertContains(self.client.get(reverse('profile')), 'Logout')
-        self.assertContains(self.client.get(reverse('profile')), 'V. Pupkin')
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'Logout')
+        self.assertContains(response, 'V. Pupkin')
+        self.assertNotContains(response, 'Войдите, чтобы')
 
     def test_post_forms_with_csrf_token(self):
         client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
         for name in ('login', 'signup', 'profile', 'ask'):
             with self.subTest(form=name):
                 url = reverse(name)
@@ -120,6 +143,107 @@ class PagesTests(TestCase):
     def test_post_without_token_is_forbidden(self):
         client = Client(enforce_csrf_checks=True)
         self.assertEqual(client.post(reverse('login')).status_code, 403)
+
+
+class AskAndAnswerTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user('pupkin', 'pupkin@example.com', 'password')
+        Profile.objects.create(user=cls.user, nickname='V. Pupkin')
+        cls.question = Question.objects.create(title='How to build a moon park?', text='Text', author=cls.user)
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_ask_creates_question_with_tags(self):
+        response = self.client.post(reverse('ask'), {'title': 'New question', 'text': 'Some long question text',
+                                                     'tags': 'Django, python, django'})
+        question = Question.objects.get(title='New question')
+        self.assertRedirects(response, question.get_absolute_url())
+        self.assertEqual(question.author, self.user)
+        self.assertEqual(sorted(question.tags.values_list('name', flat=True)), ['django', 'python'])
+
+    def test_ask_more_than_three_tags(self):
+        response = self.client.post(reverse('ask'), {'title': 'New question', 'text': 'Some long question text',
+                                                     'tags': 'a, b, c, d'})
+        self.assertTrue(response.context['form'].has_error('tags'))
+        self.assertContains(response, 'value="New question"')
+        self.assertFalse(Question.objects.filter(title='New question').exists())
+
+    def test_answer_redirects_to_last_page_with_anchor(self):
+        for i in range(5):
+            Answer.objects.create(question=self.question, author=self.user, text=f'Answer {i}')
+        response = self.client.post(self.question.get_absolute_url(), {'text': 'My new long answer'})
+        answer = Answer.objects.get(text='My new long answer')
+        self.assertRedirects(response, f'{self.question.get_absolute_url()}?page=2#answer-{answer.id}')
+        self.question.refresh_from_db()
+        self.assertEqual(self.question.answers_count, 1)   # счётчик увеличился с 0 через F()
+
+    def test_anonymous_cannot_answer(self):
+        self.client.logout()
+        response = self.client.post(self.question.get_absolute_url(), {'text': 'My new long answer'})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Answer.objects.exists())
+
+
+class AjaxTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.author = User.objects.create_user('author', 'author@example.com', 'password')
+        cls.other = User.objects.create_user('other', 'other@example.com', 'password')
+        cls.question = Question.objects.create(title='Question', text='Text', author=cls.author)
+        cls.answer = Answer.objects.create(question=cls.question, author=cls.other, text='Answer')
+        cls.answer2 = Answer.objects.create(question=cls.question, author=cls.other, text='Answer 2', is_correct=True)
+
+    def vote(self, type_, url_name='question_vote', object_id=None):
+        return self.client.post(reverse(url_name), {'id': object_id or self.question.id, 'type': type_})
+
+    def test_like_dislike_and_repeat(self):
+        self.client.force_login(self.other)
+        self.assertEqual(self.vote('like').json()['rating'], 1)
+        response = self.vote('like')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('уже', response.json()['error'])
+        self.assertEqual(self.vote('dislike').json()['rating'], -1)
+        self.assertEqual(self.vote('like', 'answer_vote', self.answer.id).json()['rating'], 1)
+        self.question.refresh_from_db()
+        self.assertEqual(self.question.rating, -1)
+
+    def test_vote_errors(self):
+        self.assertEqual(self.vote('like').status_code, 401)
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.get(reverse('question_vote')).status_code, 405)
+        self.assertEqual(self.vote('superlike').status_code, 400)
+        self.assertEqual(self.client.post(reverse('question_vote'), {'id': 'abc', 'type': 'like'}).status_code, 400)
+        self.assertEqual(self.vote('like', object_id=999999).status_code, 404)
+
+    def test_vote_needs_csrf(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.other)
+        self.assertEqual(client.post(reverse('question_vote'), {'id': self.question.id, 'type': 'like'}).status_code, 403)
+
+    def test_correct_answer(self):
+        data = {'question_id': self.question.id, 'answer_id': self.answer.id}
+        self.assertEqual(self.client.post(reverse('answer_correct'), data).status_code, 401)
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.post(reverse('answer_correct'), data).status_code, 403)
+        self.client.force_login(self.author)
+        self.assertEqual(self.client.post(reverse('answer_correct'), {**data, 'answer_id': 999999}).status_code, 404)
+        self.assertEqual(self.client.post(reverse('answer_correct'), {'answer_id': 'x'}).status_code, 400)
+        response = self.client.post(reverse('answer_correct'), data)
+        self.assertEqual(response.json(), {'answer_id': self.answer.id, 'is_correct': True})
+        self.answer2.refresh_from_db()
+        self.assertFalse(self.answer2.is_correct)   # правильный ответ у вопроса один
+        self.assertFalse(self.client.post(reverse('answer_correct'), data).json()['is_correct'])
+
+    def test_page_shows_user_vote(self):
+        self.client.force_login(self.other)
+        self.vote('like')
+        response = self.client.get(self.question.get_absolute_url())
+        self.assertContains(response, 'data-type="like" aria-label="Like"\n                aria-pressed="true" disabled')
+        self.assertNotContains(response, 'correct-checkbox')   # чекбокс только у автора вопроса
+        self.client.force_login(self.author)
+        self.assertContains(self.client.get(self.question.get_absolute_url()), 'correct-checkbox')
 
 
 class FillDbTests(TestCase):

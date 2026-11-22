@@ -1,16 +1,21 @@
-<article class="card mb-3">
+<article class="card mb-3" id="answer-{{ answer.id }}">
     <div class="card-body d-flex gap-3">
-        {% include 'questions/includes/author_side.html' with item=answer %}
+        {% include 'questions/includes/author_side.html' with item=answer kind='answer' %}
         <div class="question-main">
             <p>{{ answer.text }}</p>
             <div class="question-meta">
                 <span>{{ answer.author.profile|default:answer.author.username }}</span>
                 <time datetime="{{ answer.created_at|date:'Y-m-d\TH:i' }}">{{ answer.created_at|date:'j M, H:i' }}</time>
             </div>
+            {% if user.is_authenticated and user.id == question.author_id %}
             <div class="form-check mt-2">
-                <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}"{% if answer.is_correct %} checked{% endif %}>
+                <input class="form-check-input correct-checkbox" type="checkbox" id="correct-{{ answer.id }}"
+                       data-url="{% url 'answer_correct' %}" data-question-id="{{ question.id }}" data-answer-id="{{ answer.id }}"{% if answer.is_correct %} checked{% endif %}>
                 <label class="form-check-label" for="correct-{{ answer.id }}">Correct!</label>
             </div>
+            {% elif answer.is_correct %}
+            <div class="text-success mt-2">✔ Correct answer</div>
+            {% endif %}
         </div>
     </div>
 </article>

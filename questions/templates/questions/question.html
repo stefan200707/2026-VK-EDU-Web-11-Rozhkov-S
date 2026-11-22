@@ -11,8 +11,8 @@
             <p>{{ question.text }}</p>
             <div class="question-meta">
                 <span>{{ question.answers_count }} answers</span>
-                <span>{% include 'questions/includes/tag_links.html' with tags=question.tags %}</span>
-                <time datetime="{{ question.created|date:'Y-m-d\TH:i' }}">{{ question.created|date:'j M, H:i' }}</time>
+                <span>{% include 'questions/includes/tag_links.html' with tags=question.tags.all %}</span>
+                <time datetime="{{ question.created_at|date:'Y-m-d\TH:i' }}">{{ question.created_at|date:'j M, H:i' }}</time>
             </div>
         </div>
     </div>
@@ -21,10 +21,12 @@
 <h3 class="h5 mb-3">Answers</h3>
 {% for answer in page %}
     {% include 'questions/includes/answer_card.html' %}
+{% empty %}
+    <p class="text-muted">Пока нет ни одного ответа к этому вопросу</p>
 {% endfor %}
 {% include 'core/includes/paginator.html' %}
 
-<form class="answer-form mt-4" method="post" action="{% url 'question' question.id %}">
+<form class="answer-form mt-4" method="post" action="{{ question.get_absolute_url }}">
     {% csrf_token %}
     <h3 class="h5">Your answer</h3>
     <p class="text-danger">Sorry, your answer was not saved.</p>

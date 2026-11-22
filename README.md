@@ -7,6 +7,7 @@
 - **Ментор:** Егор Яковлев ([@klef99](https://github.com/klef99))
 - **ДЗ 1:** статическая вёрстка на HTML, CSS и Bootstrap 5.3 (папка `public/`)
 - **ДЗ 2:** Django-проект с данными-заглушками, шаблонами, маршрутами и пагинацией
+- **ДЗ 3:** модели и PostgreSQL, админка, наполнение базы командой `fill_db`, страницы на данных из БД
 
 ## ДЗ 1: как открыть вёрстку
 
@@ -53,6 +54,37 @@ docker compose up --build
 
 ```bash
 python manage.py test
+```
+
+## ДЗ 3: база данных PostgreSQL
+
+Схема базы: `schema.png`.
+
+Настройки берутся из переменных окружения: локально из `.env.local`, в Docker Compose из `.env.docker`. Оба файла не попадают в git, шаблон со всеми переменными — `.env.example`.
+
+### Локально (база в Docker, Django в venv)
+
+```bash
+cp .env.example .env.local          # DB_HOST=localhost, DB_PORT=5433, свой пароль
+cp .env.example .env.docker         # DB_HOST=db, DB_PORT=5432, тот же пароль в DB_PASSWORD и POSTGRES_PASSWORD
+docker compose up -d db             # PostgreSQL 16 на порту 5433, данные в volume pgdata
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py fill_db 10000      # пользователи 10 000, вопросы 100 000, ответы 1 000 000, теги 10 000, оценки 2 000 000
+python manage.py createsuperuser    # вход в админку /admin/
+python manage.py runserver
+```
+
+`fill_db [ratio]` добавляет ratio пользователей и тегов, ratio * 10 вопросов, ratio * 100 ответов и ratio * 200 оценок. При ratio = 10000 команда работает несколько минут.
+
+При `DEBUG=True` подключается django-debug-toolbar (панель справа на странице).
+
+### Всё в Docker Compose
+
+```bash
+docker compose up --build
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py fill_db 100
 ```
 
 ## Страницы и маршруты

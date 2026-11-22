@@ -3,7 +3,9 @@
         <h3>Popular Tags</h3>
         <div class="tag-cloud">
             {% for tag in popular_tags %}
-            <a class="tag {{ tag.css }}" href="{% url 'tag' tag.name %}">{{ tag.name }}</a>
+            <a class="tag {% cycle 'tag-big tag-red' 'tag-green' '' 'tag-small' 'tag-yellow' 'tag-red' '' 'tag-small' %}" href="{{ tag.get_absolute_url }}">{{ tag.name }}</a>
+            {% empty %}
+            <p class="text-muted">Пока нет ни одного тега</p>
             {% endfor %}
         </div>
     </section>
@@ -13,6 +15,8 @@
         <ul class="list-unstyled">
             {% for member in best_members %}
             <li><a href="{% url 'profile' %}">{{ member }}</a></li>
+            {% empty %}
+            <li class="text-muted">Пока нет лучших участников</li>
             {% endfor %}
         </ul>
     </section>

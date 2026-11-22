@@ -4,8 +4,8 @@
         <div class="question-main">
             <p>{{ answer.text }}</p>
             <div class="question-meta">
-                <span>{{ answer.author }}</span>
-                <time datetime="{{ answer.created|date:'Y-m-d\TH:i' }}">{{ answer.created|date:'j M, H:i' }}</time>
+                <span>{{ answer.author.profile|default:answer.author.username }}</span>
+                <time datetime="{{ answer.created_at|date:'Y-m-d\TH:i' }}">{{ answer.created_at|date:'j M, H:i' }}</time>
             </div>
             <div class="form-check mt-2">
                 <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}"{% if answer.is_correct %} checked{% endif %}>

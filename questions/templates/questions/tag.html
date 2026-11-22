@@ -1,10 +1,10 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Tag: {{ tag_name }} — AskPupkin{% endblock %}
+{% block title %}Tag: {{ tag.name }} — AskPupkin{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-baseline gap-3 mb-3">
-    <h2>Tag: <span class="tag-title">{{ tag_name }}</span></h2>
+    <h2>Tag: <span class="tag-title">{{ tag.name }}</span></h2>
     <a href="{% url 'index' %}">New Questions</a>
 </div>
 {% include 'questions/includes/question_list.html' %}

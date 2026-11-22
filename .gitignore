@@ -20,5 +20,6 @@ db.sqlite3
 .DS_Store
 *.log
 
-# переменные окружения (шаблон — .env.example)
-.env
+# переменные окружения: .env.local, .env.docker (шаблон — .env.example)
+.env*
+!.env.example
